@@ -12,6 +12,7 @@ import {
 import extendedClipboard from 'electron-clipboard-extended';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import sha1 from 'crypto-js/sha1';
 import { v4 as uuidv4 } from 'uuid';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
@@ -21,6 +22,8 @@ let isWindowHidden = false;
 const clipboardStore: {
   [key: string]: string | Electron.NativeImage;
 } = {};
+
+const hashes: string[] = [];
 
 export default class AppUpdater {
   constructor() {
@@ -145,32 +148,53 @@ app.on('window-all-closed', () => {
   }
 });
 
+const isContentAlreadyOnClipboard = (content: string) => {
+  const hash = sha1(content).toString();
+  const isHashPresent = hashes.includes(hash);
+
+  if (isHashPresent) {
+    return true;
+  }
+
+  hashes.push(hash);
+
+  return false;
+};
+
 extendedClipboard
   .on('text-changed', () => {
     const id = uuidv4();
     const content = clipboard.readText();
-    clipboardStore[id] = content;
 
-    mainWindow?.webContents.send('clipboard-changed', {
-      id,
-      content,
-      type: 'text',
-    });
+    if (!isContentAlreadyOnClipboard(content)) {
+      clipboardStore[id] = content;
+
+      mainWindow?.webContents.send('clipboard-changed', {
+        id,
+        content,
+        type: 'text',
+      });
+    }
   })
   .on('image-changed', async () => {
     const id = uuidv4();
     const image = extendedClipboard.readImage();
-    clipboardStore[id] = image;
 
     const resizedImage = image.resize({
       quality: 'good',
     });
 
-    mainWindow?.webContents.send('clipboard-changed', {
-      id,
-      content: resizedImage.toDataURL(),
-      type: 'image',
-    });
+    const content = resizedImage.toDataURL();
+
+    if (!isContentAlreadyOnClipboard(content)) {
+      clipboardStore[id] = image;
+
+      mainWindow?.webContents.send('clipboard-changed', {
+        id,
+        content,
+        type: 'image',
+      });
+    }
   })
   .startWatching();
 
