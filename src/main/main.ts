@@ -1,13 +1,5 @@
 /* eslint global-require: off, no-console: off, promise/always-return: off */
 
-/**
- * This module executes inside of electron's main process. You can start
- * electron renderer process from here and communicate with the other processes
- * through IPC.
- *
- * When running `npm run build` or `npm run build:main`, this file is compiled to
- * `./src/main.js` using webpack. This gives us some performance wins.
- */
 import path from 'path';
 import {
   app,
@@ -20,18 +12,15 @@ import {
 import extendedClipboard from 'electron-clipboard-extended';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import jimp from 'jimp';
+import { v4 as uuidv4 } from 'uuid';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
 let isWindowHidden = false;
 
-interface IClipboardItem {
-  content: string;
-  type: string;
-}
-
-const clipboardItems: IClipboardItem[] = [];
+const clipboardStore: {
+  [key: string]: string | Electron.NativeImage;
+} = {};
 
 export default class AppUpdater {
   constructor() {
@@ -47,6 +36,16 @@ ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   console.log(msgTemplate(arg));
   event.reply('ipc-example', msgTemplate('pong'));
+});
+
+ipcMain.handle('copy-to-clipboard', async (event, someArgument) => {
+  const { id, type } = someArgument;
+
+  if (type === 'text') {
+    clipboard.writeText(clipboardStore[id] as string);
+  } else {
+    clipboard.writeImage(clipboardStore[id] as Electron.NativeImage);
+  }
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -148,21 +147,27 @@ app.on('window-all-closed', () => {
 
 extendedClipboard
   .on('text-changed', () => {
-    console.log('text-changed', extendedClipboard.readText());
+    const id = uuidv4();
+    const content = clipboard.readText();
+    clipboardStore[id] = content;
 
     mainWindow?.webContents.send('clipboard-changed', {
-      content: extendedClipboard.readText(),
+      id,
+      content,
       type: 'text',
     });
   })
   .on('image-changed', async () => {
+    const id = uuidv4();
     const image = extendedClipboard.readImage();
+    clipboardStore[id] = image;
 
     const resizedImage = image.resize({
       quality: 'good',
     });
 
     mainWindow?.webContents.send('clipboard-changed', {
+      id,
       content: resizedImage.toDataURL(),
       type: 'image',
     });

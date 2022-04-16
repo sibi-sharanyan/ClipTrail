@@ -16,10 +16,10 @@ const MainScreen = () => {
 
   return (
     <VStack px={4} bg="gray.300" h="100vh" overflowY="auto" pt={3}>
-      {clipboardItems.map((item, ind) => {
+      {clipboardItems.map((item) => {
         return (
           <VStack
-            key={ind}
+            key={item.id}
             shadow="sm"
             bg="white"
             h="4.3rem"
@@ -27,6 +27,12 @@ const MainScreen = () => {
             w="full"
             overflow="hidden"
             p={3}
+            onClick={() => {
+              window.electron.ipcRenderer.invoke('copy-to-clipboard', {
+                id: item.id,
+                type: item.type,
+              });
+            }}
           >
             {item.type === 'text' && <Text>{item.content}</Text>}
             {item.type === 'image' && <Image src={item.content} />}

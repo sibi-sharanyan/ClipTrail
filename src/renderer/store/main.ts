@@ -1,6 +1,7 @@
 import create from 'zustand';
 
 export interface IClipboardItem {
+  id: string;
   content: string;
   type: string;
 }
