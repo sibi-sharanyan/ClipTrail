@@ -198,6 +198,8 @@ extendedClipboard
   })
   .startWatching();
 
+app.dock.hide();
+
 app
   .whenReady()
   .then(() => {
