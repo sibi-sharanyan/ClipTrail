@@ -19,11 +19,11 @@ import { resolveHtmlPath } from './util';
 
 let isWindowHidden = false;
 
-const clipboardStore: {
+let clipboardStore: {
   [key: string]: string | Electron.NativeImage;
 } = {};
 
-const hashes: string[] = [];
+let hashes: string[] = [];
 
 export default class AppUpdater {
   constructor() {
@@ -154,6 +154,7 @@ const isContentAlreadyOnClipboard = (content: string) => {
 
   if (isHashPresent) {
     return true;
+    console.log('already present');
   }
 
   hashes.push(hash);
@@ -199,6 +200,28 @@ extendedClipboard
   .startWatching();
 
 app.dock.hide();
+
+const deleteClioboardItem = (
+  event: Electron.IpcMainInvokeEvent,
+  data: {
+    id: string;
+  }
+): void => {
+  const hash = sha1(clipboardStore[data.id] as string).toString();
+
+  delete clipboardStore[data.id];
+
+  hashes = hashes.filter((h) => h !== hash);
+  console.log('clipboardStore', clipboardStore);
+};
+
+const clearAllClipboardItems = (event: Electron.IpcMainInvokeEvent): void => {
+  clipboardStore = {};
+  hashes = [];
+};
+
+ipcMain.handle('delete-clipboard-item', deleteClioboardItem);
+ipcMain.handle('clear-all-clipboard-items', clearAllClipboardItems);
 
 app
   .whenReady()

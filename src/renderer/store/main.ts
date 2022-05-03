@@ -9,6 +9,8 @@ export interface IClipboardItem {
 interface IMainStore {
   clipboardItems: IClipboardItem[];
   addClipboardItem(item: IClipboardItem): void;
+  deleteClioboardItem(itemId: string): void;
+  clearAllClipboardItems(): void;
 }
 
 export default create<IMainStore>((set) => ({
@@ -16,5 +18,13 @@ export default create<IMainStore>((set) => ({
   addClipboardItem: (item) =>
     set((state) => ({
       clipboardItems: [item, ...state.clipboardItems],
+    })),
+  deleteClioboardItem: (itemId) =>
+    set((state) => ({
+      clipboardItems: state.clipboardItems.filter((item) => item.id !== itemId),
+    })),
+  clearAllClipboardItems: () =>
+    set((state) => ({
+      clipboardItems: [],
     })),
 }));
