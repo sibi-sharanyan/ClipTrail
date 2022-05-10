@@ -44,6 +44,10 @@ ipcMain.on('ipc-example', async (event, arg) => {
 ipcMain.handle('copy-to-clipboard', async (event, someArgument) => {
   const { id, type } = someArgument;
 
+  if (Object.keys(clipboardStore).length === 0) {
+    return;
+  }
+
   if (type === 'text') {
     clipboard.writeText(clipboardStore[id] as string);
   } else {
@@ -96,6 +100,7 @@ const createWindow = async () => {
     icon: getAssetPath('icon.png'),
     titleBarStyle: 'default',
     acceptFirstMouse: true,
+    frame: true,
     webPreferences: {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')

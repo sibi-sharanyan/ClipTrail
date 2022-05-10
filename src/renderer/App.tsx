@@ -35,18 +35,19 @@ const MainScreen = () => {
             _hover={{
               border: '1px solid #423F3E',
             }}
+            key={item.id}
+            onClick={() => {
+              window.electron.ipcRenderer.invoke('copy-to-clipboard', {
+                id: item.id,
+                type: item.type,
+              });
+            }}
           >
             <VStack
               key={item.id}
               shadow="sm"
               w="35%"
               p={1}
-              onClick={() => {
-                window.electron.ipcRenderer.invoke('copy-to-clipboard', {
-                  id: item.id,
-                  type: item.type,
-                });
-              }}
               zIndex={2}
               maxH="77px"
               minH="77px"

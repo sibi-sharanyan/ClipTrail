@@ -38,7 +38,8 @@ export default function OptionsMenu({ item }: Props) {
           </MenuButton>
           <MenuList zIndex={4} fontSize="sm" w="10" p={0} bg="#171010">
             <MenuItem
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 deleteClioboardItem(item.id);
                 window.electron.ipcRenderer.invoke('delete-clipboard-item', {
                   id: item.id,
@@ -59,7 +60,8 @@ export default function OptionsMenu({ item }: Props) {
             <Divider />
             <MenuItem
               _hover={{ bg: '#2B2B2B' }}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 clearAllClipboardItems();
                 window.electron.ipcRenderer.invoke(
                   'clear-all-clipboard-items',
