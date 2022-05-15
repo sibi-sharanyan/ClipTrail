@@ -7,12 +7,13 @@ import OptionsMenu from './components/OptionsMenu';
 import './App.css';
 
 const MainScreen = () => {
-  const addClipboardItem = useStore((state) => state.addClipboardItem);
+  const setClipboardItems = useStore((state) => state.setClipboardItems);
   const clipboardItems = useStore((state) => state.clipboardItems);
 
   useEffect(() => {
     window.electron.ipcRenderer.on('clipboard-changed', (arg) => {
-      addClipboardItem(arg as IClipboardItem);
+      console.log('clipboard changed', arg);
+      setClipboardItems(arg as IClipboardItem[]);
     });
   }, []);
 
@@ -37,6 +38,7 @@ const MainScreen = () => {
             }}
             key={item.id}
             onClick={() => {
+              console.log('copy-to-clipboard', item);
               window.electron.ipcRenderer.invoke('copy-to-clipboard', {
                 id: item.id,
                 type: item.type,

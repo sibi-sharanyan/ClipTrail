@@ -19,11 +19,16 @@ import { resolveHtmlPath } from './util';
 
 let isWindowHidden = false;
 
-let clipboardStore: {
-  [key: string]: string | Electron.NativeImage;
-} = {};
+interface IClipboardItem {
+  id: string;
+  type: string;
+  content: string;
+  hash: string;
+  image?: Electron.NativeImage;
+  isPinned: boolean;
+}
 
-let hashes: string[] = [];
+let clipboardStore: IClipboardItem[] = [];
 
 export default class AppUpdater {
   constructor() {
@@ -41,18 +46,40 @@ ipcMain.on('ipc-example', async (event, arg) => {
   event.reply('ipc-example', msgTemplate('pong'));
 });
 
-ipcMain.handle('copy-to-clipboard', async (event, someArgument) => {
-  const { id, type } = someArgument;
+ipcMain.handle('copy-to-clipboard', async (event, data) => {
+  const { id, type } = data;
 
-  if (Object.keys(clipboardStore).length === 0) {
+  console.log('copy-to-clipboard', data);
+
+  if (clipboardStore.length === 0) {
+    return;
+  }
+
+  const clipboardItem = clipboardStore.find((item) => item.id === id);
+
+  if (!clipboardItem) {
     return;
   }
 
   if (type === 'text') {
-    clipboard.writeText(clipboardStore[id] as string);
+    clipboard.writeText(clipboardItem.content as string);
   } else {
-    clipboard.writeImage(clipboardStore[id] as Electron.NativeImage);
+    clipboard.writeImage(clipboardItem.image as Electron.NativeImage);
   }
+});
+
+ipcMain.handle('pin-item', async (event, data) => {
+  const { id, type } = data;
+
+  const clipboardItem = clipboardStore.find((item) => item.id === id);
+
+  if (!clipboardItem) {
+    return;
+  }
+
+  clipboardItem.isPinned = !clipboardItem.isPinned;
+
+  mainWindow?.webContents.send('clipboard-changed', clipboardStore);
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -154,33 +181,27 @@ app.on('window-all-closed', () => {
   }
 });
 
-const isContentAlreadyOnClipboard = (content: string) => {
-  const hash = sha1(content).toString();
-  const isHashPresent = hashes.includes(hash);
-
-  if (isHashPresent) {
-    return true;
-    console.log('already present');
-  }
-
-  hashes.push(hash);
-
-  return false;
-};
-
 extendedClipboard
   .on('text-changed', () => {
     const id = uuidv4();
     const content = clipboard.readText();
 
-    if (!isContentAlreadyOnClipboard(content)) {
-      clipboardStore[id] = content;
+    if (content.trim() === '') {
+      return;
+    }
 
-      mainWindow?.webContents.send('clipboard-changed', {
+    const hash = sha1(content).toString();
+
+    if (!clipboardStore.find((item) => item.hash === hash)) {
+      clipboardStore.push({
         id,
         content,
+        hash: sha1(content).toString(),
+        isPinned: false,
         type: 'text',
       });
+
+      mainWindow?.webContents.send('clipboard-changed', clipboardStore);
     }
   })
   .on('image-changed', async () => {
@@ -192,15 +213,19 @@ extendedClipboard
     });
 
     const content = resizedImage.toDataURL();
+    const hash = sha1(content).toString();
 
-    if (!isContentAlreadyOnClipboard(content)) {
-      clipboardStore[id] = image;
-
-      mainWindow?.webContents.send('clipboard-changed', {
+    if (!clipboardStore.find((item) => item.hash === hash)) {
+      clipboardStore.push({
         id,
         content,
+        hash: sha1(content).toString(),
+        isPinned: false,
+        image,
         type: 'image',
       });
+
+      mainWindow?.webContents.send('clipboard-changed', clipboardStore);
     }
   })
   .startWatching();
@@ -213,17 +238,15 @@ const deleteClioboardItem = (
     id: string;
   }
 ): void => {
-  const hash = sha1(clipboardStore[data.id] as string).toString();
+  const { id } = data;
 
-  delete clipboardStore[data.id];
-
-  hashes = hashes.filter((h) => h !== hash);
-  console.log('clipboardStore', clipboardStore);
+  clipboardStore = clipboardStore.filter((item) => item.id !== id);
+  mainWindow?.webContents.send('clipboard-changed', clipboardStore);
 };
 
 const clearAllClipboardItems = (event: Electron.IpcMainInvokeEvent): void => {
-  clipboardStore = {};
-  hashes = [];
+  clipboardStore = clipboardStore.filter((item) => item.isPinned);
+  mainWindow?.webContents.send('clipboard-changed', clipboardStore);
 };
 
 ipcMain.handle('delete-clipboard-item', deleteClioboardItem);

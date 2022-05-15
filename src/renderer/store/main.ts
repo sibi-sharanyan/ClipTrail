@@ -4,27 +4,18 @@ export interface IClipboardItem {
   id: string;
   content: string;
   type: string;
+  isPinned: boolean;
 }
 
 interface IMainStore {
   clipboardItems: IClipboardItem[];
-  addClipboardItem(item: IClipboardItem): void;
-  deleteClioboardItem(itemId: string): void;
-  clearAllClipboardItems(): void;
+  setClipboardItems(items: IClipboardItem[]): void;
 }
 
 export default create<IMainStore>((set) => ({
   clipboardItems: [],
-  addClipboardItem: (item) =>
+  setClipboardItems: (items) =>
     set((state) => ({
-      clipboardItems: [item, ...state.clipboardItems],
-    })),
-  deleteClioboardItem: (itemId) =>
-    set((state) => ({
-      clipboardItems: state.clipboardItems.filter((item) => item.id !== itemId),
-    })),
-  clearAllClipboardItems: () =>
-    set((state) => ({
-      clipboardItems: [],
+      clipboardItems: [...items],
     })),
 }));

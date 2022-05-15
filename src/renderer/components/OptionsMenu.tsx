@@ -17,11 +17,6 @@ interface Props {
 }
 
 export default function OptionsMenu({ item }: Props) {
-  const deleteClioboardItem = useStore((state) => state.deleteClioboardItem);
-  const clearAllClipboardItems = useStore(
-    (state) => state.clearAllClipboardItems
-  );
-
   return (
     <Menu size="sm">
       {({ isOpen }) => (
@@ -40,7 +35,6 @@ export default function OptionsMenu({ item }: Props) {
             <MenuItem
               onClick={(e) => {
                 e.stopPropagation();
-                deleteClioboardItem(item.id);
                 window.electron.ipcRenderer.invoke('delete-clipboard-item', {
                   id: item.id,
                 });
@@ -53,16 +47,20 @@ export default function OptionsMenu({ item }: Props) {
             </MenuItem>
             <MenuItem
               _hover={{ bg: '#2B2B2B' }}
-              onClick={() => alert('Kagebunshin')}
+              onClick={() => {
+                window.electron.ipcRenderer.invoke('pin-item', {
+                  id: item.id,
+                  type: item.type,
+                });
+              }}
             >
-              Pin
+              {item.isPinned ? 'Unpin' : 'Pin'}
             </MenuItem>
             <Divider />
             <MenuItem
               _hover={{ bg: '#2B2B2B' }}
               onClick={(e) => {
                 e.stopPropagation();
-                clearAllClipboardItems();
                 window.electron.ipcRenderer.invoke(
                   'clear-all-clipboard-items',
                   {
