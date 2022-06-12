@@ -7,6 +7,7 @@ import {
   shell,
   ipcMain,
   globalShortcut,
+  nativeImage,
   clipboard,
 } from 'electron';
 import extendedClipboard from 'electron-clipboard-extended';
@@ -33,7 +34,7 @@ interface IClipboardItem {
   type: string;
   content: string;
   hash: string;
-  image?: Electron.NativeImage;
+  imagePath?: string;
   isPinned: boolean;
 }
 
@@ -73,7 +74,12 @@ ipcMain.handle('copy-to-clipboard', async (event, data) => {
   if (type === 'text') {
     clipboard.writeText(clipboardItem.content as string);
   } else {
-    clipboard.writeImage(clipboardItem.image as Electron.NativeImage);
+    const { imagePath } = clipboardItem;
+    if (imagePath) {
+      const imageBuffer = await fs.readFile(imagePath);
+      const convertedImage = nativeImage.createFromBuffer(imageBuffer);
+      clipboard.writeImage(convertedImage);
+    }
   }
 });
 
@@ -223,10 +229,15 @@ extendedClipboard
       app.getPath('pictures'),
       path.join(app.getAppPath(), '..', '..', 'assets')
     );
-    fs.writeFile(
-      `${path.join(app.getAppPath(), '..', '..', 'image_cache')}/${id}.png`,
-      image.toPNG()
-    );
+
+    const imagePath = `${path.join(
+      app.getAppPath(),
+      '..',
+      '..',
+      'image_cache'
+    )}/${id}.png`;
+
+    fs.writeFile(imagePath, image.toPNG());
 
     const resizedImage = image.resize({
       quality: 'good',
@@ -240,8 +251,8 @@ extendedClipboard
         id,
         content: `http://localhost:${port}/${id}.png`,
         hash: sha1(content).toString(),
+        imagePath,
         isPinned: false,
-        image,
         type: 'image',
       });
 
