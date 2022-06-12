@@ -14,10 +14,19 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import sha1 from 'crypto-js/sha1';
 import { v4 as uuidv4 } from 'uuid';
+import { promises as fs } from 'fs';
+import express from 'express';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
 let isWindowHidden = false;
+const expressApp = express();
+const port = 3800;
+expressApp.use(express.static('image_cache'));
+
+expressApp.listen(port, () => {
+  console.log(`Image server listening on port ${port}`);
+});
 
 interface IClipboardItem {
   id: string;
@@ -208,6 +217,17 @@ extendedClipboard
     const id = uuidv4();
     const image = extendedClipboard.readImage();
 
+    console.log(
+      'app-path',
+      app.getAppPath(),
+      app.getPath('pictures'),
+      path.join(app.getAppPath(), '..', '..', 'assets')
+    );
+    fs.writeFile(
+      `${path.join(app.getAppPath(), '..', '..', 'image_cache')}/${id}.png`,
+      image.toPNG()
+    );
+
     const resizedImage = image.resize({
       quality: 'good',
     });
@@ -218,7 +238,7 @@ extendedClipboard
     if (!clipboardStore.find((item) => item.hash === hash)) {
       clipboardStore.push({
         id,
-        content,
+        content: `http://localhost:${port}/${id}.png`,
         hash: sha1(content).toString(),
         isPinned: false,
         image,

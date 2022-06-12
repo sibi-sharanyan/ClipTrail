@@ -48,7 +48,7 @@ const MainScreen = () => {
             <VStack
               key={item.id}
               shadow="sm"
-              w="35%"
+              w="85%"
               p={1}
               zIndex={2}
               maxH="77px"
@@ -59,7 +59,9 @@ const MainScreen = () => {
               color="white"
             >
               {item.type === 'text' && (
-                <Text fontSize="sm">{item.content}</Text>
+                <Text fontSize="sm" noOfLines={3}>
+                  {item.content}
+                </Text>
               )}
               {item.type === 'image' && <Image src={item.content} />}
               <OptionsMenu item={item} />
