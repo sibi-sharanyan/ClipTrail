@@ -23,7 +23,7 @@ import { resolveHtmlPath } from './util';
 let isWindowHidden = false;
 const expressApp = express();
 const port = 3800;
-expressApp.use(express.static('image_cache'));
+expressApp.use(express.static('../image_cache'));
 
 expressApp.listen(port, () => {
   console.log(`Image server listening on port ${port}`);
@@ -223,15 +223,9 @@ extendedClipboard
     const id = uuidv4();
     const image = extendedClipboard.readImage();
 
-    console.log(
-      'app-path',
-      app.getAppPath(),
-      app.getPath('pictures'),
-      path.join(app.getAppPath(), '..', '..', 'assets')
-    );
-
     const imagePath = `${path.join(
       app.getAppPath(),
+      '..',
       '..',
       '..',
       'image_cache'
@@ -263,19 +257,40 @@ extendedClipboard
 
 app.dock.hide();
 
-const deleteClioboardItem = (
+const deleteClioboardItem = async (
   event: Electron.IpcMainInvokeEvent,
   data: {
     id: string;
   }
-): void => {
+): Promise<void> => {
   const { id } = data;
+
+  const itemToBeDeleted = clipboardStore.find((item) => item.id === id);
+
+  if (itemToBeDeleted?.type === 'image' && itemToBeDeleted.imagePath) {
+    try {
+      fs.unlink(itemToBeDeleted.imagePath);
+    } catch (error) {
+      console.log('error', error);
+    }
+  }
 
   clipboardStore = clipboardStore.filter((item) => item.id !== id);
   mainWindow?.webContents.send('clipboard-changed', clipboardStore);
 };
 
 const clearAllClipboardItems = (event: Electron.IpcMainInvokeEvent): void => {
+  const imagesToBeDeleted = clipboardStore.filter(
+    (item) => item.type === 'image' && !item.isPinned
+  );
+
+  imagesToBeDeleted.map((item) => {
+    if (item.imagePath) {
+      fs.unlink(item.imagePath);
+    }
+    return undefined;
+  });
+
   clipboardStore = clipboardStore.filter((item) => item.isPinned);
   mainWindow?.webContents.send('clipboard-changed', clipboardStore);
 };
