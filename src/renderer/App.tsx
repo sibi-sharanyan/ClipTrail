@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import { VStack, Text, Image, Box } from '@chakra-ui/react';
+import { VStack, Text, Image, Box, HStack } from '@chakra-ui/react';
 
 import useStore, { IClipboardItem } from './store/main';
 import OptionsMenu from './components/OptionsMenu';
@@ -35,40 +35,43 @@ const MainScreen = () => {
               w="full"
               position="relative"
               bg="#2B2B2B"
-              cursor="pointer"
               _hover={{
                 border: '1px solid #423F3E',
               }}
               key={item.id}
-              onClick={() => {
-                console.log('copy-to-clipboard', item);
-                window.electron.ipcRenderer.invoke('copy-to-clipboard', {
-                  id: item.id,
-                  type: item.type,
-                });
-              }}
             >
-              <VStack
-                key={item.id}
-                shadow="sm"
-                w="85%"
-                p={1}
-                zIndex={2}
-                maxH="77px"
-                minH="77px"
-                overflow="hidden"
-                textAlign="left"
-                alignItems="flex-start"
-                color="white"
-              >
-                {item.type === 'text' && (
-                  <Text fontSize="sm" noOfLines={3}>
-                    {item.content}
-                  </Text>
-                )}
-                {item.type === 'image' && <Image src={item.content} />}
+              <HStack>
+                <VStack
+                  key={item.id}
+                  shadow="sm"
+                  w="100%"
+                  cursor="default"
+                  p={1}
+                  zIndex={2}
+                  maxH="77px"
+                  minH="77px"
+                  overflow="hidden"
+                  textAlign="left"
+                  alignItems="flex-start"
+                  color="white"
+                  onClick={() => {
+                    window.electron.ipcRenderer.invoke('copy-to-clipboard', {
+                      id: item.id,
+                      type: item.type,
+                    });
+                  }}
+                >
+                  {item.type === 'text' && (
+                    <Text fontSize="sm" noOfLines={3} w="85%">
+                      {item.content}
+                    </Text>
+                  )}
+                  {item.type === 'image' && (
+                    <Image src={item.content} w="85%" />
+                  )}
+                </VStack>
                 <OptionsMenu item={item} />
-              </VStack>
+              </HStack>
             </Box>
           );
         })}

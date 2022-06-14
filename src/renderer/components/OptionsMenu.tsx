@@ -26,12 +26,21 @@ export default function OptionsMenu({ item }: Props) {
             as={Link}
             position="absolute"
             right={2}
-            top={-1}
+            top={1}
             zIndex={3}
+            color="white"
+            mt={2}
           >
             <BsThreeDots />
           </MenuButton>
-          <MenuList zIndex={4} fontSize="sm" w="10" p={0} bg="#171010">
+          <MenuList
+            zIndex={4}
+            fontSize="sm"
+            w="10"
+            p={0}
+            bg="#171010"
+            color="white"
+          >
             <MenuItem
               onClick={(e) => {
                 e.stopPropagation();
