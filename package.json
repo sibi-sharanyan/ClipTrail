@@ -31,8 +31,8 @@
     ]
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.erb.ElectronReact",
+    "productName": "Clippy",
+    "appId": "org.erb.Clippy",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [

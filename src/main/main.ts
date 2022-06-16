@@ -9,6 +9,8 @@ import {
   globalShortcut,
   nativeImage,
   clipboard,
+  Tray,
+  Menu,
 } from 'electron';
 import extendedClipboard from 'electron-clipboard-extended';
 import { autoUpdater } from 'electron-updater';
@@ -109,6 +111,14 @@ if (isDevelopment) {
   require('electron-debug')();
 }
 
+const RESOURCES_PATH = app.isPackaged
+  ? path.join(process.resourcesPath, 'assets')
+  : path.join(__dirname, '../../assets');
+
+const getAssetPath = (...paths: string[]): string => {
+  return path.join(RESOURCES_PATH, ...paths);
+};
+
 const installExtensions = async () => {
   const installer = require('electron-devtools-installer');
   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
@@ -126,14 +136,6 @@ const createWindow = async () => {
   if (isDevelopment) {
     await installExtensions();
   }
-
-  const RESOURCES_PATH = app.isPackaged
-    ? path.join(process.resourcesPath, 'assets')
-    : path.join(__dirname, '../../assets');
-
-  const getAssetPath = (...paths: string[]): string => {
-    return path.join(RESOURCES_PATH, ...paths);
-  };
 
   mainWindow = new BrowserWindow({
     show: false,
@@ -298,9 +300,38 @@ const clearAllClipboardItems = (event: Electron.IpcMainInvokeEvent): void => {
 ipcMain.handle('delete-clipboard-item', deleteClioboardItem);
 ipcMain.handle('clear-all-clipboard-items', clearAllClipboardItems);
 
+let tray = null;
+
 app
   .whenReady()
   .then(() => {
+    const image = nativeImage.createFromPath(getAssetPath('mycake.png'));
+
+    tray = new Tray(image.resize({ width: 16, height: 16 }));
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'Show Clipboard',
+        click: () => {
+          mainWindow?.show();
+        },
+      },
+      {
+        label: 'Settings',
+        click: () => {
+          mainWindow?.setClosable(true);
+          app.quit();
+        },
+      },
+      {
+        label: 'Quit',
+        click: () => {
+          mainWindow?.setClosable(true);
+          app.quit();
+        },
+      },
+    ]);
+    tray.setToolTip('This is my application.');
+    tray.setContextMenu(contextMenu);
     globalShortcut.register('CommandOrControl+I', () => {
       if (isWindowHidden) {
         mainWindow?.show();
