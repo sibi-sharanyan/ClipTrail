@@ -51,6 +51,7 @@ export default class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
+let settingsWindow: BrowserWindow | null = null;
 
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
@@ -152,10 +153,28 @@ const createWindow = async () => {
     },
   });
 
+  settingsWindow = new BrowserWindow({
+    show: false,
+    width: 550,
+    height: 680,
+    icon: getAssetPath('icon.png'),
+    titleBarStyle: 'default',
+    acceptFirstMouse: true,
+    frame: true,
+    webPreferences: {
+      preload: app.isPackaged
+        ? path.join(__dirname, 'preload.js')
+        : path.join(__dirname, '../../.erb/dll/preload.js'),
+    },
+  });
+
   mainWindow.loadURL(resolveHtmlPath('index.html'));
+  settingsWindow.loadURL(resolveHtmlPath('index.html'));
   mainWindow.setAlwaysOnTop(true, 'floating');
   mainWindow.setResizable(false);
+  settingsWindow.setResizable(false);
   mainWindow.setMinimizable(false);
+  settingsWindow.setMinimizable(false);
   // mainWindow.setClosable(false);
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
@@ -166,6 +185,14 @@ const createWindow = async () => {
     } else {
       mainWindow.show();
     }
+  });
+
+  settingsWindow.on('ready-to-show', () => {
+    if (!settingsWindow) {
+      throw new Error('"settingsWindow" is not defined');
+    }
+
+    settingsWindow?.webContents.send('goto-settings', clipboardStore);
   });
 
   mainWindow.on('closed', () => {
@@ -318,8 +345,7 @@ app
       {
         label: 'Settings',
         click: () => {
-          mainWindow?.setClosable(true);
-          app.quit();
+          settingsWindow?.show();
         },
       },
       {

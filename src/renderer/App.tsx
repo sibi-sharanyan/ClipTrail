@@ -1,12 +1,20 @@
 import { useEffect } from 'react';
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
+import {
+  MemoryRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+} from 'react-router-dom';
 import { VStack, Text, Image, Box, HStack } from '@chakra-ui/react';
 
 import useStore, { IClipboardItem } from './store/main';
 import OptionsMenu from './components/OptionsMenu';
 import './App.css';
+import SettingsPage from './SettingsPage';
 
 const MainScreen = () => {
+  const navigate = useNavigate();
+
   const setClipboardItems = useStore((state) => state.setClipboardItems);
   const clipboardItems = useStore((state) => state.clipboardItems);
 
@@ -14,6 +22,11 @@ const MainScreen = () => {
     window.electron.ipcRenderer.on('clipboard-changed', (arg) => {
       console.log('clipboard changed', arg);
       setClipboardItems(arg as IClipboardItem[]);
+    });
+
+    window.electron.ipcRenderer.on('goto-settings', (arg) => {
+      console.log('goto-settings', arg);
+      navigate('/settings');
     });
   }, []);
 
@@ -84,6 +97,9 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/" element={<MainScreen />} />
+      </Routes>
+      <Routes>
+        <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </Router>
   );

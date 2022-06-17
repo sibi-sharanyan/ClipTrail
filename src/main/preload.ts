@@ -6,7 +6,11 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.send('ipc-example', 'ping');
     },
     on(channel: string, func: (...args: unknown[]) => void) {
-      const validChannels = ['ipc-example', 'clipboard-changed'];
+      const validChannels = [
+        'ipc-example',
+        'clipboard-changed',
+        'goto-settings',
+      ];
       if (validChannels.includes(channel)) {
         const subscription = (_event: IpcRendererEvent, ...args: unknown[]) =>
           func(...args);
