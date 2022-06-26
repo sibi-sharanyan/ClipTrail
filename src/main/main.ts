@@ -156,7 +156,7 @@ const createWindow = async () => {
   settingsWindow = new BrowserWindow({
     show: false,
     width: 550,
-    height: 680,
+    height: 480,
     icon: getAssetPath('icon.png'),
     titleBarStyle: 'default',
     acceptFirstMouse: true,
