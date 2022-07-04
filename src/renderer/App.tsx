@@ -16,6 +16,7 @@ const MainScreen = () => {
   const navigate = useNavigate();
 
   const setClipboardItems = useStore((state) => state.setClipboardItems);
+  const setSettings = useStore((state) => state.setSettings);
   const clipboardItems = useStore((state) => state.clipboardItems);
 
   useEffect(() => {
@@ -24,8 +25,9 @@ const MainScreen = () => {
       setClipboardItems(arg as IClipboardItem[]);
     });
 
-    window.electron.ipcRenderer.on('goto-settings', (arg) => {
+    window.electron.ipcRenderer.on('goto-settings', (arg: any) => {
       console.log('goto-settings', arg);
+      setSettings(arg);
       navigate('/settings');
     });
   }, []);

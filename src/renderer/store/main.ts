@@ -7,9 +7,16 @@ export interface IClipboardItem {
   isPinned: boolean;
 }
 
+export interface ISettings {
+  portNumber: number;
+  selectedShortcut: string;
+}
+
 interface IMainStore {
   clipboardItems: IClipboardItem[];
   setClipboardItems(items: IClipboardItem[]): void;
+  settings: ISettings;
+  setSettings(settings: ISettings): void;
 }
 
 export default create<IMainStore>((set) => ({
@@ -17,5 +24,16 @@ export default create<IMainStore>((set) => ({
   setClipboardItems: (items) =>
     set((state) => ({
       clipboardItems: [...items],
+    })),
+  settings: {
+    portNumber: 3000,
+    selectedShortcut: 'CommandOrControl+Shift+C',
+  },
+  setSettings: (settings) =>
+    set((state) => ({
+      settings: {
+        ...state.settings,
+        ...settings,
+      },
     })),
 }));

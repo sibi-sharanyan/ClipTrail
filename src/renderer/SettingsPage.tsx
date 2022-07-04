@@ -7,7 +7,8 @@ import {
   Button,
   SimpleGrid,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import useStore, { IClipboardItem } from './store/main';
 
 const shortcuts = [
   {
@@ -29,17 +30,29 @@ const shortcuts = [
 ];
 
 export default function SettingsPage() {
+  const settings = useStore((state) => state.settings);
+
   const [selectedShortcut, setSelectedShortcut] = useState('');
-  const [portNumber, setPortNumber] = useState('');
+  const [portNumber, setPortNumber] = useState(3000);
+
+  useEffect(() => {
+    if (settings.portNumber) {
+      setPortNumber(settings.portNumber);
+    }
+
+    if (settings.selectedShortcut) {
+      setSelectedShortcut(settings.selectedShortcut);
+    }
+  }, [settings]);
 
   return (
     <VStack bg="#171010" h="100vh" py={10} px={6} spacing={16}>
       <HStack w="100%">
-        <Text w="30%" color="white" align="start">
-          Invoke key combination:
+        <Text w="40%" color="white" align="start">
+          Invoke key:
         </Text>
 
-        <SimpleGrid columns={3} spacing={2} w="70%">
+        <SimpleGrid columns={2} spacing={2} w="60%">
           {shortcuts.map((shortcut, index) => {
             return (
               <HStack
@@ -70,9 +83,9 @@ export default function SettingsPage() {
       </HStack>
 
       <HStack color="white" w="100%">
-        <Text w="30%">Image server port number</Text>
+        <Text w="40%">Server port:</Text>
 
-        <VStack w="30%">
+        <VStack w="60%">
           <Input
             type="number"
             placeholder="Port Number"
@@ -87,7 +100,17 @@ export default function SettingsPage() {
         </VStack>
       </HStack>
 
-      <Button colorScheme="gray" size="md">
+      <Button
+        colorScheme="gray"
+        size="md"
+        w="28"
+        onClick={() => {
+          window.electron.ipcRenderer.invoke('settings-updated', {
+            portNumber,
+            selectedShortcut,
+          });
+        }}
+      >
         Save
       </Button>
     </VStack>

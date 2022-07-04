@@ -19,8 +19,11 @@ import sha1 from 'crypto-js/sha1';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import express from 'express';
+import Store from 'electron-store';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+
+const store = new Store();
 
 let isWindowHidden = false;
 const expressApp = express();
@@ -155,8 +158,8 @@ const createWindow = async () => {
 
   settingsWindow = new BrowserWindow({
     show: false,
-    width: 550,
-    height: 480,
+    width: 400,
+    height: 440,
     icon: getAssetPath('icon.png'),
     titleBarStyle: 'default',
     acceptFirstMouse: true,
@@ -192,7 +195,10 @@ const createWindow = async () => {
       throw new Error('"settingsWindow" is not defined');
     }
 
-    settingsWindow?.webContents.send('goto-settings', clipboardStore);
+    settingsWindow?.webContents.send('goto-settings', {
+      portNumber: store.get('port'),
+      selectedShortcut: store.get('shortcut'),
+    });
   });
 
   mainWindow.on('closed', () => {
@@ -324,8 +330,17 @@ const clearAllClipboardItems = (event: Electron.IpcMainInvokeEvent): void => {
   mainWindow?.webContents.send('clipboard-changed', clipboardStore);
 };
 
+const settingUpdated = (event: Electron.IpcMainInvokeEvent, data): void => {
+  console.log('settings updated', data);
+  store.set('port', data.portNumber);
+  store.set('shortcut', data.selectedShortcut);
+  console.log('store.get', store.get('port'));
+};
+
 ipcMain.handle('delete-clipboard-item', deleteClioboardItem);
 ipcMain.handle('clear-all-clipboard-items', clearAllClipboardItems);
+ipcMain.handle('settings-updated', settingUpdated);
+
 
 let tray = null;
 
