@@ -26,8 +26,8 @@ export default create<IMainStore>((set) => ({
       clipboardItems: [...items],
     })),
   settings: {
-    portNumber: 3000,
-    selectedShortcut: 'CommandOrControl+Shift+C',
+    portNumber: 3800,
+    selectedShortcut: 'Command+i',
   },
   setSettings: (settings) =>
     set((state) => ({

@@ -32,8 +32,8 @@ const shortcuts = [
 export default function SettingsPage() {
   const settings = useStore((state) => state.settings);
 
-  const [selectedShortcut, setSelectedShortcut] = useState('');
-  const [portNumber, setPortNumber] = useState(3000);
+  const [selectedShortcut, setSelectedShortcut] = useState('Command+i');
+  const [portNumber, setPortNumber] = useState(3800);
 
   useEffect(() => {
     if (settings.portNumber) {

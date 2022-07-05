@@ -27,7 +27,7 @@ const store = new Store();
 
 let isWindowHidden = false;
 const expressApp = express();
-const port = 3800;
+const port = store.get('port') || 3800;
 expressApp.use(express.static('../image_cache'));
 
 expressApp.listen(port, () => {
@@ -178,7 +178,17 @@ const createWindow = async () => {
   settingsWindow.setResizable(false);
   mainWindow.setMinimizable(false);
   settingsWindow.setMinimizable(false);
-  // mainWindow.setClosable(false);
+
+  settingsWindow.on('close', (e) => {
+    e.preventDefault();
+    settingsWindow?.hide();
+  });
+
+  mainWindow.on('close', (e) => {
+    e.preventDefault();
+    mainWindow?.hide();
+  });
+
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
@@ -335,12 +345,14 @@ const settingUpdated = (event: Electron.IpcMainInvokeEvent, data): void => {
   store.set('port', data.portNumber);
   store.set('shortcut', data.selectedShortcut);
   console.log('store.get', store.get('port'));
+
+  app.relaunch();
+  app.exit(0);
 };
 
 ipcMain.handle('delete-clipboard-item', deleteClioboardItem);
 ipcMain.handle('clear-all-clipboard-items', clearAllClipboardItems);
 ipcMain.handle('settings-updated', settingUpdated);
-
 
 let tray = null;
 
@@ -373,14 +385,17 @@ app
     ]);
     tray.setToolTip('This is my application.');
     tray.setContextMenu(contextMenu);
-    globalShortcut.register('CommandOrControl+I', () => {
-      if (isWindowHidden) {
-        mainWindow?.show();
-      } else {
-        mainWindow?.hide();
+    globalShortcut.register(
+      (store.get('shortcut') || 'Command+i') as string,
+      () => {
+        if (isWindowHidden) {
+          mainWindow?.show();
+        } else {
+          mainWindow?.hide();
+        }
+        isWindowHidden = !isWindowHidden;
       }
-      isWindowHidden = !isWindowHidden;
-    });
+    );
     createWindow();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
