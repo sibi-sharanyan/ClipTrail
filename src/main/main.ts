@@ -148,7 +148,7 @@ const createWindow = async () => {
     icon: getAssetPath('icon.png'),
     titleBarStyle: 'default',
     acceptFirstMouse: true,
-    frame: true,
+    frame: false,
     webPreferences: {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
@@ -364,9 +364,14 @@ app
     tray = new Tray(image.resize({ width: 16, height: 16 }));
     const contextMenu = Menu.buildFromTemplate([
       {
-        label: 'Show Clipboard',
+        label: 'Toggle Clipboard',
         click: () => {
-          mainWindow?.show();
+          if (isWindowHidden) {
+            mainWindow?.show();
+          } else {
+            mainWindow?.hide();
+          }
+          isWindowHidden = !isWindowHidden;
         },
       },
       {
