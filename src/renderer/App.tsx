@@ -82,7 +82,14 @@ const MainScreen = () => {
                     </Text>
                   )}
                   {item.type === 'image' && (
-                    <Image src={item.content} w="85%" />
+                    <Box
+                      w="100%"
+                      h="5rem"
+                      bgImage={`linear-gradient(rgba(0, 0, 0, 0.3) ,rgba(0, 0, 0, 0)), url(${item.content})`}
+                      backgroundSize="cover"
+                      backgroundRepeat="no-repeat"
+                      backgroundPosition="center"
+                    />
                   )}
                 </VStack>
                 <OptionsMenu item={item} />
