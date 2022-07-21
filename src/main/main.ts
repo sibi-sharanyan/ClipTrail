@@ -17,7 +17,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import sha1 from 'crypto-js/sha1';
 import { v4 as uuidv4 } from 'uuid';
-import { promises as fs } from 'fs';
+import { promises as fs, existsSync, mkdirSync } from 'fs';
 import express from 'express';
 import Store from 'electron-store';
 import MenuBuilder from './menu';
@@ -28,7 +28,20 @@ const store = new Store();
 let isWindowHidden = false;
 const expressApp = express();
 const port = store.get('port') || 3800;
-expressApp.use(express.static('../image_cache'));
+
+const imageCachePath = path.join(app.getPath('pictures'), 'image_cache');
+
+console.log('imageCachePath', imageCachePath);
+
+const checkPath = async (dirPath: string): Promise<void> => {
+  if (!existsSync(dirPath)) {
+    mkdirSync(dirPath);
+  }
+};
+
+checkPath(imageCachePath);
+
+expressApp.use(express.static(imageCachePath));
 
 expressApp.listen(port, () => {
   console.log(`Image server listening on port ${port}`);
@@ -268,13 +281,7 @@ extendedClipboard
     const id = uuidv4();
     const image = extendedClipboard.readImage();
 
-    const imagePath = `${path.join(
-      app.getAppPath(),
-      '..',
-      '..',
-      '..',
-      'image_cache'
-    )}/${id}.png`;
+    const imagePath = `${imageCachePath}/${id}.png`;
 
     fs.writeFile(imagePath, image.toPNG());
 
@@ -383,8 +390,7 @@ app
       {
         label: 'Quit',
         click: () => {
-          mainWindow?.setClosable(true);
-          app.quit();
+          app.exit(0);
         },
       },
     ]);
