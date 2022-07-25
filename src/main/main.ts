@@ -28,6 +28,7 @@ const store = new Store();
 let isWindowHidden = false;
 const expressApp = express();
 const port = store.get('port') || 3800;
+const clipboardItemsLimit = 30;
 
 const imageCachePath = path.join(app.getPath('pictures'), 'image_cache');
 
@@ -102,6 +103,11 @@ ipcMain.handle('copy-to-clipboard', async (event, data) => {
   }
 });
 
+const sendClipboardStoreToMainWindow = (): void => {
+  clipboardStore = clipboardStore.slice(-1 * clipboardItemsLimit);
+  mainWindow?.webContents.send('clipboard-changed', clipboardStore);
+};
+
 ipcMain.handle('pin-item', async (event, data) => {
   const { id, type } = data;
 
@@ -113,7 +119,7 @@ ipcMain.handle('pin-item', async (event, data) => {
 
   clipboardItem.isPinned = !clipboardItem.isPinned;
 
-  mainWindow?.webContents.send('clipboard-changed', clipboardStore);
+  sendClipboardStoreToMainWindow();
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -274,7 +280,7 @@ extendedClipboard
         type: 'text',
       });
 
-      mainWindow?.webContents.send('clipboard-changed', clipboardStore);
+      sendClipboardStoreToMainWindow();
     }
   })
   .on('image-changed', async () => {
@@ -302,7 +308,7 @@ extendedClipboard
         type: 'image',
       });
 
-      mainWindow?.webContents.send('clipboard-changed', clipboardStore);
+      sendClipboardStoreToMainWindow();
     }
   })
   .startWatching();
@@ -328,7 +334,7 @@ const deleteClioboardItem = async (
   }
 
   clipboardStore = clipboardStore.filter((item) => item.id !== id);
-  mainWindow?.webContents.send('clipboard-changed', clipboardStore);
+  sendClipboardStoreToMainWindow();
 };
 
 const clearAllClipboardItems = (event: Electron.IpcMainInvokeEvent): void => {
@@ -344,7 +350,7 @@ const clearAllClipboardItems = (event: Electron.IpcMainInvokeEvent): void => {
   });
 
   clipboardStore = clipboardStore.filter((item) => item.isPinned);
-  mainWindow?.webContents.send('clipboard-changed', clipboardStore);
+  sendClipboardStoreToMainWindow();
 };
 
 const settingUpdated = (event: Electron.IpcMainInvokeEvent, data): void => {
