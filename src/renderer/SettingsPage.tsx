@@ -33,6 +33,7 @@ export default function SettingsPage() {
   const settings = useStore((state) => state.settings);
 
   const [selectedShortcut, setSelectedShortcut] = useState('Command+i');
+  const [clipboardItemsLimit, setClipboardItemsLimit] = useState(30);
   const [portNumber, setPortNumber] = useState(3800);
 
   useEffect(() => {
@@ -42,6 +43,10 @@ export default function SettingsPage() {
 
     if (settings.selectedShortcut) {
       setSelectedShortcut(settings.selectedShortcut);
+    }
+
+    if (settings.clipboardItemsLimit) {
+      setClipboardItemsLimit(settings.clipboardItemsLimit);
     }
   }, [settings]);
 
@@ -83,6 +88,26 @@ export default function SettingsPage() {
       </HStack>
 
       <HStack color="white" w="100%">
+        <Text w="40%">Items to store in clipboard:</Text>
+
+        <VStack w="60%">
+          <Input
+            type="number"
+            placeholder="Clipboard Items Limit"
+            min={20}
+            max={100}
+            value={clipboardItemsLimit}
+            onChange={(event) => {
+              setClipboardItemsLimit(Number(event.target.value));
+            }}
+          />
+          <Text fontSize="xs" color="gray.300">
+            Older clipboard items beyond this limit will be discarded
+          </Text>
+        </VStack>
+      </HStack>
+
+      <HStack color="white" w="100%">
         <Text w="40%">Server port:</Text>
 
         <VStack w="60%">
@@ -91,11 +116,11 @@ export default function SettingsPage() {
             placeholder="Port Number"
             value={portNumber}
             onChange={(event) => {
-              setPortNumber(event.target.value);
+              setPortNumber(Number(event.target.value));
             }}
           />
           <Text fontSize="xs" color="gray.300">
-            (Change this only if you know what you&apos;re doing)
+            Change this only if you know what you&apos;re doing
           </Text>
         </VStack>
       </HStack>
@@ -108,6 +133,7 @@ export default function SettingsPage() {
           window.electron.ipcRenderer.invoke('settings-updated', {
             portNumber,
             selectedShortcut,
+            clipboardItemsLimit,
           });
         }}
       >

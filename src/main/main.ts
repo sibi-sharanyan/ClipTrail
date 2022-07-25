@@ -28,7 +28,7 @@ const store = new Store();
 let isWindowHidden = false;
 const expressApp = express();
 const port = store.get('port') || 3800;
-const clipboardItemsLimit = 30;
+const clipboardItemsLimit = store.get('clipboard-limit') || 30;
 
 const imageCachePath = path.join(app.getPath('pictures'), 'image_cache');
 
@@ -178,7 +178,7 @@ const createWindow = async () => {
   settingsWindow = new BrowserWindow({
     show: false,
     width: 400,
-    height: 440,
+    height: 640,
     icon: getAssetPath('icon.png'),
     titleBarStyle: 'default',
     acceptFirstMouse: true,
@@ -357,6 +357,11 @@ const settingUpdated = (event: Electron.IpcMainInvokeEvent, data): void => {
   console.log('settings updated', data);
   store.set('port', data.portNumber);
   store.set('shortcut', data.selectedShortcut);
+
+  if (data.clipboardItemsLimit >= 20 && data.clipboardItemsLimit <= 100) {
+    store.set('clipboard-limit', data.clipboardItemsLimit);
+  }
+
   console.log('store.get', store.get('port'));
 
   app.relaunch();

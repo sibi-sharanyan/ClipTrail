@@ -10,6 +10,7 @@ export interface IClipboardItem {
 export interface ISettings {
   portNumber: number;
   selectedShortcut: string;
+  clipboardItemsLimit: number;
 }
 
 interface IMainStore {
@@ -28,6 +29,7 @@ export default create<IMainStore>((set) => ({
   settings: {
     portNumber: 3800,
     selectedShortcut: 'Command+i',
+    clipboardItemsLimit: 30,
   },
   setSettings: (settings) =>
     set((state) => ({
