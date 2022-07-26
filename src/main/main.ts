@@ -28,7 +28,7 @@ const store = new Store();
 let isWindowHidden = false;
 const expressApp = express();
 const port = store.get('port') || 3800;
-const clipboardItemsLimit = store.get('clipboard-limit') || 30;
+const clipboardItemsLimit = Number(store.get('clipboard-limit')) || 30;
 
 const imageCachePath = path.join(app.getPath('pictures'), 'image_cache');
 
@@ -103,6 +103,7 @@ ipcMain.handle('copy-to-clipboard', async (event, data) => {
   }
 });
 
+// Handle Pinned Clipboard Item and images to be deleted
 const sendClipboardStoreToMainWindow = (): void => {
   clipboardStore = clipboardStore.slice(-1 * clipboardItemsLimit);
   mainWindow?.webContents.send('clipboard-changed', clipboardStore);
@@ -287,18 +288,14 @@ extendedClipboard
     const id = uuidv4();
     const image = extendedClipboard.readImage();
 
-    const imagePath = `${imageCachePath}/${id}.png`;
-
-    fs.writeFile(imagePath, image.toPNG());
-
-    const resizedImage = image.resize({
-      quality: 'good',
-    });
-
-    const content = resizedImage.toDataURL();
+    const content = image.toDataURL();
     const hash = sha1(content).toString();
 
     if (!clipboardStore.find((item) => item.hash === hash)) {
+      const imagePath = `${imageCachePath}/${id}.png`;
+
+      fs.writeFile(imagePath, image.toPNG());
+
       clipboardStore.push({
         id,
         content: `http://localhost:${port}/${id}.png`,

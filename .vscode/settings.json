@@ -9,6 +9,9 @@
   "javascript.format.enable": true,
   "typescript.format.enable": true,
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "search.exclude": {
     ".git": true,
