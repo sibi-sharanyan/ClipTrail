@@ -85,7 +85,7 @@ const MainScreen = () => {
                     <Box
                       w="100%"
                       h="5rem"
-                      bgImage={`linear-gradient(rgba(0, 0, 0, 0.3) ,rgba(0, 0, 0, 0)), url(${item.content})`}
+                      bgImage={`linear-gradient(rgba(0, 0, 0, 0.3) ,rgba(0, 0, 0, 0)), url(${item.thumbnail})`}
                       backgroundSize="cover"
                       backgroundRepeat="no-repeat"
                       backgroundPosition="center"

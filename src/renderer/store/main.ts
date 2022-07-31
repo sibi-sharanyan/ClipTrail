@@ -3,6 +3,7 @@ import create from 'zustand';
 export interface IClipboardItem {
   id: string;
   content: string;
+  thumbnail?: string;
   type: string;
   isPinned: boolean;
 }

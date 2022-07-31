@@ -52,6 +52,8 @@ interface IClipboardItem {
   id: string;
   type: string;
   content: string;
+  thumbnail?: string;
+  thumbnailPath?: string;
   hash: string;
   imagePath?: string;
   isPinned: boolean;
@@ -293,14 +295,19 @@ extendedClipboard
 
     if (!clipboardStore.find((item) => item.hash === hash)) {
       const imagePath = `${imageCachePath}/${id}.png`;
+      const thumbnailPath = `${imageCachePath}/${id}-thumbnail.jpeg`;
 
       fs.writeFile(imagePath, image.toPNG());
+
+      await fs.writeFile(thumbnailPath, image.toJPEG(10));
 
       clipboardStore.push({
         id,
         content: `http://localhost:${port}/${id}.png`,
-        hash: sha1(content).toString(),
+        thumbnail: `http://localhost:${port}/${id}-thumbnail.jpeg`,
         imagePath,
+        hash,
+        thumbnailPath,
         isPinned: false,
         type: 'image',
       });
@@ -325,6 +332,10 @@ const deleteClioboardItem = async (
   if (itemToBeDeleted?.type === 'image' && itemToBeDeleted.imagePath) {
     try {
       fs.unlink(itemToBeDeleted.imagePath);
+
+      if (itemToBeDeleted.thumbnailPath) {
+        fs.unlink(itemToBeDeleted.thumbnailPath);
+      }
     } catch (error) {
       console.log('error', error);
     }
@@ -342,6 +353,9 @@ const clearAllClipboardItems = (event: Electron.IpcMainInvokeEvent): void => {
   imagesToBeDeleted.map((item) => {
     if (item.imagePath) {
       fs.unlink(item.imagePath);
+    }
+    if (item.thumbnailPath) {
+      fs.unlink(item.thumbnailPath);
     }
     return undefined;
   });
