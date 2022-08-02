@@ -60,7 +60,7 @@ interface IClipboardItem {
 }
 
 let clipboardStore: IClipboardItem[] = [];
-
+let mostRecentlyCopiedClipboardItemHash = '';
 export default class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
@@ -88,6 +88,9 @@ ipcMain.handle('copy-to-clipboard', async (event, data) => {
   }
 
   const clipboardItem = clipboardStore.find((item) => item.id === id);
+
+  mostRecentlyCopiedClipboardItemHash =
+    clipboardItem?.hash || mostRecentlyCopiedClipboardItemHash;
 
   if (!clipboardItem) {
     return;
@@ -263,6 +266,20 @@ app.on('window-all-closed', () => {
   }
 });
 
+const moveExistingClipboardItemToEnd = (hash: string): void => {
+  if (hash === mostRecentlyCopiedClipboardItemHash) {
+    mostRecentlyCopiedClipboardItemHash = '';
+    return;
+  }
+
+  const clipboardItem = clipboardStore.find((item) => item.hash === hash);
+  if (clipboardItem) {
+    clipboardStore.splice(clipboardStore.indexOf(clipboardItem), 1);
+    clipboardStore.push(clipboardItem);
+  }
+  sendClipboardStoreToMainWindow();
+};
+
 extendedClipboard
   .on('text-changed', () => {
     const id = uuidv4();
@@ -284,6 +301,8 @@ extendedClipboard
       });
 
       sendClipboardStoreToMainWindow();
+    } else {
+      moveExistingClipboardItemToEnd(hash);
     }
   })
   .on('image-changed', async () => {
@@ -313,6 +332,8 @@ extendedClipboard
       });
 
       sendClipboardStoreToMainWindow();
+    } else {
+      moveExistingClipboardItemToEnd(hash);
     }
   })
   .startWatching();
