@@ -59,7 +59,11 @@ interface IClipboardItem {
   isPinned: boolean;
 }
 
-let clipboardStore: IClipboardItem[] = [];
+const clipboardStoreCache = (store.get('clipboard-store') ||
+  []) as IClipboardItem[];
+
+let clipboardStore: IClipboardItem[] = clipboardStoreCache || [];
+
 let mostRecentlyCopiedClipboardItemHash = '';
 export default class AppUpdater {
   constructor() {
@@ -112,6 +116,7 @@ ipcMain.handle('copy-to-clipboard', async (event, data) => {
 const sendClipboardStoreToMainWindow = (): void => {
   clipboardStore = clipboardStore.slice(-1 * clipboardItemsLimit);
   mainWindow?.webContents.send('clipboard-changed', clipboardStore);
+  store.set('clipboard-store', clipboardStore);
 };
 
 ipcMain.handle('pin-item', async (event, data) => {
@@ -222,6 +227,9 @@ const createWindow = async () => {
       mainWindow.minimize();
     } else {
       mainWindow.show();
+      if (clipboardStore.length > 0) {
+        sendClipboardStoreToMainWindow();
+      }
     }
   });
 
