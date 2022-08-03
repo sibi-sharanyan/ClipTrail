@@ -238,10 +238,17 @@ const createWindow = async () => {
       throw new Error('"settingsWindow" is not defined');
     }
 
-    settingsWindow?.webContents.send('goto-settings', {
+    const settings = {
       portNumber: store.get('port'),
       selectedShortcut: store.get('shortcut'),
+      clipboardItemsLimit: store.get('clipboard-limit'),
+    };
+
+    settingsWindow?.webContents.send('populate-settings', {
+      settings,
+      navigateToSettingsPage: true,
     });
+    mainWindow?.webContents.send('populate-settings', { settings });
   });
 
   mainWindow.on('closed', () => {

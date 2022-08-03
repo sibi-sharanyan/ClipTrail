@@ -10,7 +10,7 @@ import {
 import { useEffect, useState } from 'react';
 import useStore, { IClipboardItem } from './store/main';
 
-const shortcuts = [
+export const shortcuts = [
   {
     keys: ['⌘', 'i'],
     globalShortcut: 'Command+i',

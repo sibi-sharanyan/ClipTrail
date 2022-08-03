@@ -11,6 +11,7 @@ import useStore, { IClipboardItem } from './store/main';
 import OptionsMenu from './components/OptionsMenu';
 import './App.css';
 import SettingsPage from './SettingsPage';
+import ClipboardEmpty from './components/ClipboardEmpty';
 
 const MainScreen = () => {
   const navigate = useNavigate();
@@ -25,10 +26,9 @@ const MainScreen = () => {
       setClipboardItems(arg as IClipboardItem[]);
     });
 
-    window.electron.ipcRenderer.on('goto-settings', (arg: any) => {
-      console.log('goto-settings', arg);
-      setSettings(arg);
-      navigate('/settings');
+    window.electron.ipcRenderer.on('populate-settings', (arg: any) => {
+      setSettings(arg.settings);
+      if (arg.navigateToSettingsPage) navigate('/settings');
     });
   }, []);
 
@@ -97,6 +97,8 @@ const MainScreen = () => {
             </Box>
           );
         })}
+
+      {clipboardItems.length === 0 && <ClipboardEmpty />}
     </VStack>
   );
 };

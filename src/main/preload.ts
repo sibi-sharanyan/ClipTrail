@@ -9,7 +9,7 @@ contextBridge.exposeInMainWorld('electron', {
       const validChannels = [
         'ipc-example',
         'clipboard-changed',
-        'goto-settings',
+        'populate-settings',
       ];
       if (validChannels.includes(channel)) {
         const subscription = (_event: IpcRendererEvent, ...args: unknown[]) =>
