@@ -28,7 +28,8 @@ const store = new Store();
 let isWindowHidden = false;
 const expressApp = express();
 const port = store.get('port') || 3800;
-const clipboardItemsLimit = Number(store.get('clipboard-limit')) || 30;
+// const clipboardItemsLimit = Number(store.get('clipboard-limit')) || 30;
+const clipboardItemsLimit = 30;
 
 const imageCachePath = path.join(app.getPath('pictures'), 'image_cache');
 
@@ -112,11 +113,44 @@ ipcMain.handle('copy-to-clipboard', async (event, data) => {
   }
 });
 
-// Handle Pinned Clipboard Item and images to be deleted
+const handleImageItemToBeDeleted = (
+  itemToBeDeleted: IClipboardItem | undefined
+) => {
+  if (itemToBeDeleted?.type === 'image' && itemToBeDeleted.imagePath) {
+    try {
+      fs.unlink(itemToBeDeleted.imagePath);
+
+      if (itemToBeDeleted.thumbnailPath) {
+        fs.unlink(itemToBeDeleted.thumbnailPath);
+      }
+    } catch (error) {
+      console.log('error', error);
+    }
+  }
+};
+
 const sendClipboardStoreToMainWindow = (): void => {
-  clipboardStore = clipboardStore.slice(-1 * clipboardItemsLimit);
+  let noOfItemsToBeDeleted = clipboardStore.length - clipboardItemsLimit;
+
+  const itemsToBeDeleted: IClipboardItem[] = [];
+
+  clipboardStore.forEach((item) => {
+    if (!item.isPinned && noOfItemsToBeDeleted > 0) {
+      itemsToBeDeleted.push(item);
+      noOfItemsToBeDeleted -= 1;
+    }
+  });
+
+  clipboardStore = clipboardStore.filter(
+    (item) => !itemsToBeDeleted.find(({ id }) => id === item.id)
+  );
+
   mainWindow?.webContents.send('clipboard-changed', clipboardStore);
   store.set('clipboard-store', clipboardStore);
+
+  itemsToBeDeleted.forEach((item) => {
+    handleImageItemToBeDeleted(item);
+  });
 };
 
 ipcMain.handle('pin-item', async (event, data) => {
@@ -365,17 +399,7 @@ const deleteClioboardItem = async (
 
   const itemToBeDeleted = clipboardStore.find((item) => item.id === id);
 
-  if (itemToBeDeleted?.type === 'image' && itemToBeDeleted.imagePath) {
-    try {
-      fs.unlink(itemToBeDeleted.imagePath);
-
-      if (itemToBeDeleted.thumbnailPath) {
-        fs.unlink(itemToBeDeleted.thumbnailPath);
-      }
-    } catch (error) {
-      console.log('error', error);
-    }
-  }
+  handleImageItemToBeDeleted(itemToBeDeleted);
 
   clipboardStore = clipboardStore.filter((item) => item.id !== id);
   sendClipboardStoreToMainWindow();
@@ -387,12 +411,7 @@ const clearAllClipboardItems = (event: Electron.IpcMainInvokeEvent): void => {
   );
 
   imagesToBeDeleted.map((item) => {
-    if (item.imagePath) {
-      fs.unlink(item.imagePath);
-    }
-    if (item.thumbnailPath) {
-      fs.unlink(item.thumbnailPath);
-    }
+    handleImageItemToBeDeleted(item);
     return undefined;
   });
 
