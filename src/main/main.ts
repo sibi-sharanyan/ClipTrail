@@ -464,6 +464,14 @@ app
           settingsWindow?.show();
         },
       },
+      { type: 'separator' },
+      {
+        label: 'Contact Developer',
+        click: () => {
+          shell.openExternal('http://sibi.me');
+        },
+      },
+      { type: 'separator' },
       {
         label: 'Quit',
         click: () => {

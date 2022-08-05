@@ -24,6 +24,14 @@ export const shortcuts = [
     globalShortcut: 'Option+i',
   },
   {
+    keys: ['⌃', '⇧', 'i'],
+    globalShortcut: 'Control+Shift+i',
+  },
+  {
+    keys: ['⌃', 'i'],
+    globalShortcut: 'Control+i',
+  },
+  {
     keys: ['⌘', '⌥', 'i'],
     globalShortcut: 'Command+Option+i',
   },
@@ -54,7 +62,7 @@ export default function SettingsPage() {
     <VStack bg="#171010" h="100vh" py={10} px={6} spacing={16}>
       <HStack w="100%">
         <Text w="40%" color="white" align="start">
-          Invoke key:
+          Invoke key combination:
         </Text>
 
         <SimpleGrid columns={2} spacing={2} w="60%">
@@ -120,7 +128,7 @@ export default function SettingsPage() {
             }}
           />
           <Text fontSize="xs" color="gray.300">
-            Change this only if you know what you&apos;re doing
+            The port that the app server runs on
           </Text>
         </VStack>
       </HStack>
