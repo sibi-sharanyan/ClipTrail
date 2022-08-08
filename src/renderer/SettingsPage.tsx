@@ -95,7 +95,7 @@ export default function SettingsPage() {
         </SimpleGrid>
       </HStack>
 
-      <HStack color="white" w="100%">
+      {/* <HStack color="white" w="100%">
         <Text w="40%">Items to store in clipboard:</Text>
 
         <VStack w="60%">
@@ -113,7 +113,7 @@ export default function SettingsPage() {
             Older clipboard items beyond this limit will be discarded
           </Text>
         </VStack>
-      </HStack>
+      </HStack> */}
 
       <HStack color="white" w="100%">
         <Text w="40%">Server port:</Text>

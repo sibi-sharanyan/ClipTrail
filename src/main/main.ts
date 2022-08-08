@@ -29,7 +29,7 @@ let isWindowHidden = false;
 const expressApp = express();
 const port = store.get('port') || 3800;
 // const clipboardItemsLimit = Number(store.get('clipboard-limit')) || 30;
-const clipboardItemsLimit = 30;
+const clipboardItemsLimit = 50;
 
 const imageCachePath = path.join(app.getPath('pictures'), 'image_cache');
 
@@ -223,7 +223,7 @@ const createWindow = async () => {
   settingsWindow = new BrowserWindow({
     show: false,
     width: 400,
-    height: 640,
+    height: 480,
     icon: getAssetPath('icon.png'),
     titleBarStyle: 'default',
     acceptFirstMouse: true,
@@ -440,12 +440,19 @@ ipcMain.handle('settings-updated', settingUpdated);
 
 let tray = null;
 
+const toggleWidget = () => {
+  if (isWindowHidden) {
+    mainWindow?.show();
+  } else {
+    mainWindow?.hide();
+  }
+  isWindowHidden = !isWindowHidden;
+};
+
 app
   .whenReady()
   .then(() => {
-    const image = nativeImage.createFromPath(getAssetPath('mycake.png'));
-
-    tray = new Tray(image.resize({ width: 16, height: 16 }));
+    tray = new Tray(getAssetPath('ClipboardTemplate@2x.png'));
     const contextMenu = Menu.buildFromTemplate([
       {
         label: 'Toggle Clipboard',
@@ -479,17 +486,16 @@ app
         },
       },
     ]);
-    tray.setToolTip('This is my application.');
+    // tray.on('right-click', (e) => {
+    //   e.preventDefault();
+    //   console.log('hello');
+    //   toggleWidget();
+    // });
     tray.setContextMenu(contextMenu);
     globalShortcut.register(
       (store.get('shortcut') || 'Command+i') as string,
       () => {
-        if (isWindowHidden) {
-          mainWindow?.show();
-        } else {
-          mainWindow?.hide();
-        }
-        isWindowHidden = !isWindowHidden;
+        toggleWidget();
       }
     );
     createWindow();
