@@ -8,6 +8,7 @@ import {
   ipcMain,
   globalShortcut,
   nativeImage,
+  screen,
   clipboard,
   Tray,
   Menu,
@@ -85,8 +86,6 @@ ipcMain.on('ipc-example', async (event, arg) => {
 
 ipcMain.handle('copy-to-clipboard', async (event, data) => {
   const { id, type } = data;
-
-  console.log('copy-to-clipboard', data);
 
   if (clipboardStore.length === 0) {
     return;
@@ -205,10 +204,26 @@ const createWindow = async () => {
     await installExtensions();
   }
 
+  // const displays = screen.getAllDisplays();
+
+  // displays.forEach((display) => {
+  //   console.log(display.workAreaSize);
+  // });
+
+  // const display = screen.getPrimaryDisplay();
+  // const dimensions = display.workAreaSize;
+
+  const clipboardWidgetWidth = 350;
+  const clipboardWidgetHeight = 480;
+
   mainWindow = new BrowserWindow({
     show: false,
-    width: 350,
-    height: 480,
+    width: clipboardWidgetWidth,
+    height: clipboardWidgetHeight,
+    maxWidth: clipboardWidgetWidth,
+    maxHeight: clipboardWidgetHeight,
+    minWidth: 250,
+    minHeight: 380,
     icon: getAssetPath('icon.png'),
     titleBarStyle: 'default',
     acceptFirstMouse: true,
@@ -238,7 +253,7 @@ const createWindow = async () => {
   mainWindow.loadURL(resolveHtmlPath('index.html'));
   settingsWindow.loadURL(resolveHtmlPath('index.html'));
   mainWindow.setAlwaysOnTop(true, 'floating');
-  mainWindow.setResizable(false);
+  // mainWindow.setResizable(false);
   settingsWindow.setResizable(false);
   mainWindow.setMinimizable(false);
   settingsWindow.setMinimizable(false);
