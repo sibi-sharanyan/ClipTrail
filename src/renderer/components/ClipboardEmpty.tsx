@@ -11,11 +11,11 @@ export default function ClipboardEmpty() {
     <VStack color="gray.400" spacing={10} mt={7}>
       <CopyIcon fontSize="9xl" color="gray.300" />
       <Text align="center">
-        No items in clipboard. Start copying things to add items here.
+        No items in clipboard. Text and Images you copy get listed here.
       </Text>
 
       <Text align="center">
-        You can toggle me with
+        You can hide me with
         <HStack display="inline" mx={2}>
           {shortcuts
             .find((s) => s.globalShortcut === settings.selectedShortcut)
@@ -25,11 +25,6 @@ export default function ClipboardEmpty() {
               </Kbd>
             ))}
         </HStack>
-      </Text>
-
-      <Text align="center">
-        To customize the behavior of this widget, look for the menu bar icon
-        and. click it.
       </Text>
     </VStack>
   );

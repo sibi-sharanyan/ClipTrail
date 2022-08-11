@@ -31,8 +31,8 @@
     ]
   },
   "build": {
-    "productName": "Clippy",
-    "appId": "org.erb.Clippy",
+    "productName": "ClipTrail",
+    "appId": "org.erb.ClipTrail",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [

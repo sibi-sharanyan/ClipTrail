@@ -51,7 +51,8 @@ const MainScreen = () => {
               position="relative"
               bg="#2B2B2B"
               _hover={{
-                border: '1px solid #423F3E',
+                backgroundColor: 'gray.800',
+                transition: 'all 0.1s ease-in-out',
               }}
               key={item.id}
             >

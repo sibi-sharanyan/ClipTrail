@@ -470,7 +470,7 @@ app
     tray = new Tray(getAssetPath('ClipboardTemplate@2x.png'));
     const contextMenu = Menu.buildFromTemplate([
       {
-        label: 'Toggle Clipboard',
+        label: 'Toggle ClipTrail',
         click: () => {
           if (isWindowHidden) {
             mainWindow?.show();
@@ -490,7 +490,13 @@ app
       {
         label: 'Contact Developer',
         click: () => {
-          shell.openExternal('http://sibi.me');
+          shell.openExternal('https://www.sibi.me');
+        },
+      },
+      {
+        label: 'Donate',
+        click: () => {
+          shell.openExternal('https://www.buymeacoffee.com/sibisharanyan');
         },
       },
       { type: 'separator' },
