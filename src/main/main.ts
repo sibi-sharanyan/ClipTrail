@@ -26,10 +26,17 @@ import { resolveHtmlPath } from './util';
 
 const store = new Store();
 
+if (!store.get('port')) {
+  store.set('port', 3801);
+}
+
+if (!store.get('shortcut')) {
+  store.set('shortcut', 'Command+i');
+}
+
 let isWindowHidden = false;
 const expressApp = express();
-const port = store.get('port') || 3800;
-// const clipboardItemsLimit = Number(store.get('clipboard-limit')) || 30;
+const port = store.get('port') || 3801;
 const clipboardItemsLimit = 50;
 
 const imageCachePath = path.join(app.getPath('pictures'), 'image_cache');
