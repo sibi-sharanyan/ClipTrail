@@ -3,7 +3,7 @@
 ClipTrail is a clipboard manager for Mac that keeps track of all items you copy and allows you to access them anytime.
 
 
-<img src="https://cliptrail.sibi.me/assets/demo.e2915859.gif" width="950" height="450" />
+<img src="https://media.licdn.com/dms/image/C5622AQEaDaQEfOvTcw/feedshare-shrink_800/0/1660217147807?e=1689206400&v=beta&t=ybrLU9KT46gxbQ8UxUgXMVok_7U_go_Nkxd1VuIGP0U" width="950" height="450" />
 
 
 ## Features
